@@ -1,0 +1,141 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace PosSystem.AdoDotNet
+{
+    public class Sale
+    {
+        private readonly string _connectionString = @"Data Source=.;Initial Catalog=PosSystem.AdoDotNet;User ID=sa;Password=sasa@123;Trusted_Connection=True;";
+
+        public void CreateSale()
+        {
+            string voucherNo = "V" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            DateTime saleDate = DateTime.Now;
+            List<(int ProductId, int Quantity, decimal Price)> saleDetails = new List<(int, int, decimal)>();
+            decimal totalAmount = 0;
+
+            while (true)
+            {
+                Console.Write("Enter Product ID (or 0 to finish): ");
+                if (!int.TryParse(Console.ReadLine(), out int productId) || productId == 0) break;
+
+                Console.Write("Enter Quantity: ");
+                if (!int.TryParse(Console.ReadLine(), out int quantity)) continue;
+
+                // Fetch product price
+                decimal price = 0;
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    string priceQuery = "SELECT Price FROM Product WHERE ProductId = @ProductId";
+                    using (SqlCommand cmd = new SqlCommand(priceQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@ProductId", productId);
+                        object result = cmd.ExecuteScalar();
+                        if (result == null)
+                        {
+                            Console.WriteLine("Product not found.");
+                            continue;
+                        }
+                        price = Convert.ToDecimal(result);
+                    }
+                }
+
+                saleDetails.Add((productId, quantity, price));
+                totalAmount += price * quantity;
+            }
+
+            // Insert Sale and SaleDetail with transaction
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                SqlTransaction transaction = connection.BeginTransaction();
+                try
+                {
+                    // Insert into Sale and get SaleId
+                    string saleQuery = @"INSERT INTO [dbo].[Sale]
+                                        ([VoucherNo], [SaleDate], [TotalAmount])
+                                        VALUES (@VoucherNo, @SaleDate, @TotalAmount);
+                                        SELECT SCOPE_IDENTITY();";
+
+                    int saleId;
+                    using (SqlCommand cmd = new SqlCommand(saleQuery, connection, transaction))
+                    {
+                        cmd.Parameters.AddWithValue("@VoucherNo", voucherNo);
+                        cmd.Parameters.AddWithValue("@SaleDate", saleDate);
+                        cmd.Parameters.AddWithValue("@TotalAmount", totalAmount);
+                        saleId = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // Insert into SaleDetail
+                    foreach (var item in saleDetails)
+                    {
+                        string detailQuery = @"INSERT INTO [dbo].[SaleDetail]
+                                               ([SaleId], [ProductId], [Quantity], [Price], [VoucherNo])
+                                               VALUES (@SaleId, @ProductId, @Quantity, @Price, @VoucherNo)";
+
+                        using (SqlCommand cmd = new SqlCommand(detailQuery, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@SaleId", saleId);
+                            cmd.Parameters.AddWithValue("@ProductId", item.ProductId);
+                            cmd.Parameters.AddWithValue("@Quantity", item.Quantity);
+                            cmd.Parameters.AddWithValue("@Price", item.Price);
+                            cmd.Parameters.AddWithValue("@VoucherNo", voucherNo);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaction.Commit();
+                    Console.WriteLine("Sale recorded successfully with VoucherNo: " + voucherNo);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    Console.WriteLine("Error occurred: " + ex.Message);
+                }
+            }
+        }
+
+
+        public void ReadSales()
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = @"SELECT s.VoucherNo, s.SaleDate, s.TotalAmount, 
+                                 p.ProductName, sd.Quantity, sd.Price
+                                 FROM Sale s
+                                 JOIN SaleDetail sd ON s.VoucherNo = sd.VoucherNo
+                                 JOIN Product p ON sd.ProductId = p.ProductId
+                                 ORDER BY s.VoucherNo, p.ProductName";
+
+                SqlCommand cmd = new SqlCommand(query, connection);
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+
+                if (dt.Rows.Count > 0)
+                {
+                    string currentVoucher = "";
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        string voucher = row["VoucherNo"].ToString();
+                        if (voucher != currentVoucher)
+                        {
+                            currentVoucher = voucher;
+                            Console.WriteLine($"\nVoucher No: {voucher}, Date: {Convert.ToDateTime(row["SaleDate"]):yyyy-MM-dd}, Total: {row["TotalAmount"]}");
+                        }
+
+                        Console.WriteLine($"Product: {row["ProductName"]}, Quantity: {row["Quantity"]}, Price: {row["Price"]}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No sales found.");
+                }
+            }
+        }
+    }
+}
