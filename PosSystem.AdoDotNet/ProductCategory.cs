@@ -15,9 +15,21 @@ namespace PosSystem.AdoDotNet
         // Create Product Category
         public void CreateProductCategory()
         {
-            Console.WriteLine("Enter ProductCategory Name:  ");
-            string category = Console.ReadLine();
-            
+            string category;
+            while (true)
+            {
+                Console.WriteLine("Enter ProductCategory Name:  ");
+                category = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(category))
+                {
+                    Console.WriteLine("Category name cannot be empty. Please try again.");
+                }
+                else
+                {
+                    break;
+                }
+            }
+
             SqlConnection connection = new SqlConnection(_connectionString);
 
             connection.Open();
@@ -73,8 +85,20 @@ namespace PosSystem.AdoDotNet
         // Update Product Categoty
         public void UpdateProductCategory()
         {
-            Console.Write("Enter Product Category ID to Update: ");
-            int id = int.Parse(Console.ReadLine());
+            int id;
+            while(true)
+            {
+                Console.Write("Enter Product Category ID to Update: ");
+                if (!int.TryParse(Console.ReadLine(), out id))
+                {
+                    Console.WriteLine("Invalid ID input.");
+                }
+                else
+                {
+                    break;
+                }
+            }
+
             Console.Write("Enter New Product Category Name: ");
             string category = Console.ReadLine();
 
@@ -99,8 +123,19 @@ namespace PosSystem.AdoDotNet
         // Delete Product Category
         public void DeleteProductCategory()
         {
-            Console.Write("Enter Product Category ID to Delete: ");
-            int id = int.Parse(Console.ReadLine());
+            int id;
+            while(true)
+            {
+                Console.Write("Enter Product Category ID to Delete: ");
+                if (!int.TryParse(Console.ReadLine(), out id))
+                {
+                    Console.WriteLine("Invalid ID input.");
+                }
+                else
+                {
+                    break;
+                }
+            }
 
             SqlConnection connection = new SqlConnection(_connectionString);
 

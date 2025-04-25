@@ -19,10 +19,42 @@ namespace PosSystem.AdoDotNet
             while (true)
             {
                 Console.Write("Enter Product ID (or 0 to finish): ");
-                if (!int.TryParse(Console.ReadLine(), out int productId) || productId == 0) break;
+                if (!int.TryParse(Console.ReadLine(), out int productId) || productId < 0)
+                {
+                    Console.WriteLine("Invalid Product ID.");
+                    continue;
+                }
+
+                if (productId == 0) break;
+
+                string productQuery = "SELECT COUNT(*) FROM Product WHERE ProductId = @ProductId";
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    using (SqlCommand checkCmd = new SqlCommand(productQuery, connection))
+                    {
+                        checkCmd.Parameters.AddWithValue("@ProductId", productId);
+                        object result = checkCmd.ExecuteScalar();
+                        int exists = (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : 0;
+
+                        if (exists == 0)
+                        {
+                            Console.WriteLine("Product ID does not exist.");
+                            continue;
+                        }
+                    }
+                }
 
                 Console.Write("Enter Quantity: ");
-                if (!int.TryParse(Console.ReadLine(), out int quantity)) continue;
+                if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
+                {
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid quantity. Please enter a integer value.");
+                }
 
                 // Fetch product price
                 decimal price = 0;

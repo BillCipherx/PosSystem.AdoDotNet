@@ -15,28 +15,64 @@ namespace PosSystem.AdoDotNet
         // Create Product
         public void CreateProduct()
         {
-            Console.Write("Enter Product Name: ");
-            string name = Console.ReadLine();
+            string name;
+            while (true)
+            {
+                Console.Write("Enter Product Name: ");
+                name = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    Console.WriteLine("Category name cannot be empty. Please try again.");
+                }
+                else
+                {
+                    break;
+                }
+            }
+
             decimal price;
             while(true)
             {
                 Console.Write("Enter Product Price: ");
-                string input = (Console.ReadLine());
-                if(decimal.TryParse(input, out price) )
+                if(decimal.TryParse((Console.ReadLine()), out price) && price > 0 )
                 {
                     break;
-                }
+                }   
                 else
                 {
                     Console.WriteLine("Invalid price. Please enter a number value.");
                 }
             }
-            Console.Write("Enter Product ID: ");
-            int categoryId = int.Parse(Console.ReadLine());
+            int categoryId;
+            while(true)
+            {
+                Console.Write("Enter Product Category ID: ");
+                if (int.TryParse((Console.ReadLine()), out categoryId))
+                {
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid product categoryid. Please try again.");
+                }
+            }
 
             SqlConnection connection = new SqlConnection(_connectionString);
 
             connection.Open();
+
+            string categoryQuery = "SELECT COUNT(*) FROM ProductCategory WHERE ProductCategoryId = @CategoryId";
+
+            SqlCommand categoryCmd = new SqlCommand(categoryQuery, connection);
+            categoryCmd.Parameters.AddWithValue("@CategoryId", categoryId);
+            int categoryExists = (int)categoryCmd.ExecuteScalar();
+
+            if (categoryExists == 0)
+            {
+                Console.WriteLine("Product Category ID does not exist. Please add the category first or choose a valid one.");
+                connection.Close();
+                return;
+            }
 
             string query = @"INSERT INTO [dbo].[Product]
                            ([ProductName]
@@ -53,7 +89,7 @@ namespace PosSystem.AdoDotNet
             cmd.Parameters.AddWithValue("@ProductCategoryId", categoryId);
             int result = cmd.ExecuteNonQuery();
 
-            connection.Close();
+            connection.Close(); 
 
             Console.WriteLine(result == 1 ? "Creating Successful" : "Creating Failed");
         }
@@ -103,6 +139,7 @@ namespace PosSystem.AdoDotNet
                     Console.WriteLine("Invalid ID. Please enter a number value.");
                 }
             }
+
             Console.Write("Enter New Product Name: ");
             string name = Console.ReadLine();
             decimal price;
@@ -119,6 +156,7 @@ namespace PosSystem.AdoDotNet
                     Console.WriteLine("Invalid price. Please enter a number value.");
                 }
             }
+
             Console.Write("Enter New Product Category ID: ");
             int categoryId = int.Parse(Console.ReadLine());
 
@@ -147,8 +185,19 @@ namespace PosSystem.AdoDotNet
         // Delete Product
         public void DeleteProduct()
         {
-            Console.Write("Enter Product ID to Delete: ");
-            int id = int.Parse(Console.ReadLine());
+            int id;
+            while (true)
+            {
+                Console.Write("Enter Product ID to Delete: ");
+                if (!int.TryParse(Console.ReadLine(), out id))
+                {
+                    Console.WriteLine("Invalid ID input.");
+                }
+                else
+                {
+                    break;
+                }
+            }
 
             SqlConnection connection = new SqlConnection(_connectionString);
 
