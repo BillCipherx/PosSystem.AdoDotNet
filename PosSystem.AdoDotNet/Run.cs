@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,8 +9,7 @@ namespace PosSystem.AdoDotNet
 {
     public class Run
     {
-        static string connectionString = @"Data Source=.;Initial Catalog=PosSystem.AdoDotNet;User ID=sa;Password=sasa@123;Trusted_Connection=True;";
-        SqlConnection connection = new SqlConnection(connectionString);
+        SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
         public void Start()
         {
@@ -46,7 +45,7 @@ namespace PosSystem.AdoDotNet
 
         static void ManageProductCategory()
         {
-            ProductCategory productCategory = new ProductCategory();
+            ProductCategoryService productCategory = new ProductCategoryService();
             while (true)
             {
                 Console.WriteLine("\n--- Product Category CRUD ---");
@@ -83,7 +82,7 @@ namespace PosSystem.AdoDotNet
 
         static void ManageProduct()
         {
-            Product product = new Product();
+            ProductService product = new ProductService();
             while (true)
             {
                 Console.WriteLine("\n--- Product CRUD ---");
@@ -120,7 +119,7 @@ namespace PosSystem.AdoDotNet
 
         static void Sale()
         {
-            Sale sale = new Sale();
+            SaleService sale = new SaleService();
             while (true)
             {
                 Console.WriteLine("\n--- Product Sale ---");
@@ -147,7 +146,5 @@ namespace PosSystem.AdoDotNet
 
             }
         }
-
-
     }
 }

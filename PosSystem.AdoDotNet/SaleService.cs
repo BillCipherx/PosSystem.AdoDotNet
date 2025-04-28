@@ -1,14 +1,13 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+
 
 namespace PosSystem.AdoDotNet
 {
-    public class Sale
+    public class SaleService
     {
-        private readonly string _connectionString = @"Data Source=.;Initial Catalog=PosSystem.AdoDotNet;User ID=sa;Password=sasa@123;Trusted_Connection=True;";
-
         public void CreateSale()
         {
             string voucherNo = "V" + DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -28,7 +27,7 @@ namespace PosSystem.AdoDotNet
                 if (productId == 0) break;
 
                 string productQuery = "SELECT COUNT(*) FROM Product WHERE ProductId = @ProductId";
-                using (SqlConnection connection = new SqlConnection(_connectionString))
+                using (SqlConnection connection = new SqlConnection(AppSetting.ConnectionString))
                 {
                     connection.Open();
 
@@ -58,7 +57,7 @@ namespace PosSystem.AdoDotNet
 
                 // Fetch product price
                 decimal price = 0;
-                using (SqlConnection connection = new SqlConnection(_connectionString))
+                using (SqlConnection connection = new SqlConnection(AppSetting.ConnectionString))
                 {
                     connection.Open();
                     string priceQuery = "SELECT Price FROM Product WHERE ProductId = @ProductId";
@@ -80,7 +79,7 @@ namespace PosSystem.AdoDotNet
             }
 
             // Insert Sale and SaleDetail with transaction
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlConnection connection = new SqlConnection(AppSetting.ConnectionString))
             {
                 connection.Open();
                 SqlTransaction transaction = connection.BeginTransaction();
@@ -133,7 +132,7 @@ namespace PosSystem.AdoDotNet
 
         public void ReadSales()
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlConnection connection = new SqlConnection(AppSetting.ConnectionString))
             {
                 connection.Open();
                 string query = @"SELECT s.VoucherNo, s.SaleDate, s.TotalAmount, 

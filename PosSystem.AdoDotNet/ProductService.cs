@@ -5,13 +5,12 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace PosSystem.AdoDotNet
 {
-    public class Product
+    public class ProductService
     {
-        private readonly string _connectionString = @"Data Source=.;Initial Catalog=PosSystem.AdoDotNet;User ID=sa;Password=sasa@123;Trusted_Connection=True;";
-
         // Create Product
         public void CreateProduct()
         {
@@ -56,8 +55,8 @@ namespace PosSystem.AdoDotNet
                     Console.WriteLine("Invalid product categoryid. Please try again.");
                 }
             }
-
-            SqlConnection connection = new SqlConnection(_connectionString);
+            
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
             connection.Open();
 
@@ -97,7 +96,7 @@ namespace PosSystem.AdoDotNet
         // Read Products
         public void ReadProducts()
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
             connection.Open();
 
             string query = @"SELECT [ProductId]
@@ -160,7 +159,7 @@ namespace PosSystem.AdoDotNet
             Console.Write("Enter New Product Category ID: ");
             int categoryId = int.Parse(Console.ReadLine());
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
             connection.Open();
 
@@ -199,7 +198,7 @@ namespace PosSystem.AdoDotNet
                 }
             }
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
             connection.Open();
 

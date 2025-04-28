@@ -1,17 +1,15 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PosSystem.AdoDotNet
 {
-    public class ProductCategory
+    public class ProductCategoryService
     {
-        private readonly string _connectionString = @"Data Source=.;Initial Catalog=PosSystem.AdoDotNet;User ID=sa;Password=sasa@123;Trusted_Connection=True;";
-        
         // Create Product Category
         public void CreateProductCategory()
         {
@@ -30,7 +28,7 @@ namespace PosSystem.AdoDotNet
                 }
             }
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
             connection.Open();
 
@@ -52,7 +50,7 @@ namespace PosSystem.AdoDotNet
         // Read Product Categories
         public void ReadProductCategories()
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
             connection.Open();
 
@@ -102,7 +100,7 @@ namespace PosSystem.AdoDotNet
             Console.Write("Enter New Product Category Name: ");
             string category = Console.ReadLine();
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
             connection.Open();
 
@@ -137,7 +135,7 @@ namespace PosSystem.AdoDotNet
                 }
             }
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            SqlConnection connection = new SqlConnection(AppSetting.ConnectionString);
 
             connection.Open();
 
